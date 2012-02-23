@@ -1,4 +1,7 @@
 
+#pragma once
+
+#include <hysh/hysh.h>
 #include <hysh/data_buffer.h>
 #include <hysh/unicode_string.h>
 

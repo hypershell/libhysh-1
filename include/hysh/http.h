@@ -1,8 +1,10 @@
 
+#pragma once
+
+#include <hysh/hysh.h>
 #include <hysh/data_buffer.h>
 #include <hysh/string_table.h>
 #include <hysh/unicode_string.h>
-
 
 HYDefineInterface(hy_http_request_line) {
     hyresult (*http_version)(hy_self_ptr self,

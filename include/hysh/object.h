@@ -9,29 +9,38 @@ struct hy_meta_class;
 struct hy_meta_interface;
 struct hy_meta_method;
 struct hy_common_methods;
+struct hy_allocator;
 
-HYDefineChain(hy_meta_interface_chain, struct hy_meta_interface*);
-HYDefineChain(hy_meta_method_chain, struct hy_meta_method*);
+HYDefineChainInterface(hy_meta_interface_chain, struct hy_meta_interface*);
+HYDefineChainInterface(hy_meta_method_chain, struct hy_meta_method*);
 
-typedef struct hy_object {
+typedef struct hy_object_base {
     void *self;
     
-    struct hy_common_methods *common_methods;
+    struct hy_allocator *allocator;
+    
+    struct hy_reference_pool *pool;
+    
+    struct hy_common_methods *methods;
+
+} hy_object_base;
+
+typedef struct hy_object {
+    hy_object_base *base;
 } hy_object;
 
-HYDefineChain(hy_object_chain, hy_object*);
+HYDefineChainInterface(hy_object_chain, hy_object*);
 
 
 typedef struct hy_common_methods {
-    hyresult (*metaclass)(void *self, struct hy_metaclass **retval);
-    
-    hyresult (*add_ref)(void *self, hy_refcount_t *retval);
+    hyresult (*add_ref)(void *self);
 
-    hyresult (*de_ref)(void *self, hy_refcount_t *retval);
+    hyresult (*de_ref)(void *self);
     
-    hyresult (*query_interface)(void *self, hy_metainterface *interface, void **retval);
+    hyresult (*metaclass)(void *self, struct hy_meta_class **retval);
     
-    hyresult (*is_multithreaded)(void *self, hy_bool *retval);
+    hyresult (*query_interface)(void *self, 
+            struct hy_meta_interface *interface, hy_object **retval);
 
 } hy_common_methods;
 
@@ -42,10 +51,6 @@ HYDefineInterface(hy_meta_class) {
     hyresult (*description)(void *self, const char **retval);
     
     hyresult (*supported_interfaces)(void *self, hy_meta_interface_chain **retval);
-    
-    hyresult (*call_method)(void *self, hy_object *object, 
-                hy_meta_interface *interface, hy_meta_method *method, 
-                hy_object_chain *args, hy_object_chain **retvals);
 };
 
 
@@ -55,6 +60,9 @@ HYDefineInterface(hy_meta_interface) {
     hyresult (*description)(void *self, const char **retval);
     
     hyresult (*supported_methods)(void *self, hy_meta_method_chain **retval);
+    
+    hyresult (*get_method)(void *self, const char *method_name, 
+                                struct hy_meta_method **retval);
 };
 
 
@@ -65,30 +73,6 @@ HYDefineInterface(hy_meta_method) {
     
     hyresult (*args)(void *self, hy_meta_interface_chain **inputs_retval, 
                         hy_meta_interface_chain **outputs_retval);
+                        
+    hyresult (*call)(void *self, hy_object_chain *args, hy_object_chain **retvals);
 };
-
-
-void hy_add_ref(hy_generic_object *obj) {
-    if(obj) {
-        obj->base->base_methods->add_ref(obj->self);
-    }
-}
-
-void hy_de_ref(hy_generic_object **obj) {
-    if(*obj) {
-        (*obj)->base->base_methods->de_ref((*obj)->self);
-        (*obj) = 0;
-    }
-}
-
-void* hy_query_interface(hy_object *obj, hy_interface_id iid) {
-    if(obj) {
-        hy_metaclass *metaclass = obj->base->base_methods->metaclass(obj->self);
-        void *retval = 0;
-        hyresult result = metaclass->query_interface(metaclass->self, obj, iid, &retval);
-        return retval;
-    } else {
-        return 0;
-    }
-}
-

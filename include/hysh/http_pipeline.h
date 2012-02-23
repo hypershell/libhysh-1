@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <hysh/hysh.h>
 #include <hysh/http.h>
 #include <hysh/chain.h>
 

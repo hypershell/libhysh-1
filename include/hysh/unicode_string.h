@@ -9,8 +9,6 @@ typedef unsigned long hy_codepoint_t;
 struct hy_unicode_string_iterator;
 
 HYDefineInterface(hy_unicode_string) {
-    hy_object_base *base;
-    
     hyresult (*length)(hy_self_ptr self, hy_uint_64 *retval);
     
     hyresult (*iter)(hy_self_ptr self, 
@@ -23,8 +21,6 @@ HYDefineInterface(hy_unicode_string) {
 };
 
 HYDefineInterface(hy_unicode_string_iterator) {
-    hy_object_base *base;
-    
     hyresult (*next)(hy_self_ptr self);
     
     hyresult (*has_next)(hy_self_ptr self, hy_bool *retval);
