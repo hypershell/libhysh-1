@@ -3,17 +3,16 @@
 
 #include <hysh/hysh.h>
 
-HYDefineInterface(hy_allocator) {
-    hyresult (*allocate)(void *self, uint64_t size, void **retval);
-    hyresult (*deallocate)(void *self, void *ptr);
-};
-
-HYDefineInterface(hy_reference_pool) {
+HYDefineInterface(hy_memory_pool) {
+    hyresult (*allocate)(void *self, uint64_t size, hy_object **retval);
+    
     hyresult (*managed_add_ref)(void *self, hy_object *object);
     
     hyresult (*managed_de_ref)(void *self, hy_object *object);
     
     hyresult (*create_subpool)(void *self, hy_reference_pool **retval);
+    
+    hyresult (*cleanup_pool)(void *self);
 };
 
 inline hyresult hy_alloc(hy_object *parent, uint64_t size, hy_object **retval) {

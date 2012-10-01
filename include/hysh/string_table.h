@@ -8,9 +8,11 @@
 struct hy_string_table_visitor;
 
 HYDefineInterface(hy_string_table) {
+    hyresult (*has_value)(void *self, hy_string *key, bool *retval);
+    
     hyresult (*get_value)(hy_self_ptr self,
-                        hy_data_buffer *key,
-                        hy_data_buffer **retval);
+                        hy_string *key,
+                        hy_string **retval);
                         
     hyresult (*accept_table_visitor)(hy_self_ptr self,
                         struct hy_string_table_visitor *visitor);

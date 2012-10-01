@@ -17,9 +17,7 @@ HYDefineChainInterface(hy_meta_method_chain, struct hy_meta_method*);
 typedef struct hy_object_base {
     void *self;
     
-    struct hy_allocator *allocator;
-    
-    struct hy_reference_pool *pool;
+    struct hy_memory_pool *pool;
     
     struct hy_common_methods *methods;
 
@@ -71,8 +69,10 @@ HYDefineInterface(hy_meta_method) {
     
     hyresult (*description)(void *self, const char **retval);
     
-    hyresult (*args)(void *self, hy_meta_interface_chain **inputs_retval, 
-                        hy_meta_interface_chain **outputs_retval);
+    hyresult (*args_count)(void *self, int *inputs_retval, int *outputs_retval);
+    
+    hyresult (*args)(void *self, hy_meta_interface **inputs_retval, 
+                        hy_meta_interface **outputs_retval);
                         
-    hyresult (*call)(void *self, hy_object_chain *args, hy_object_chain **retvals);
+    hyresult (*call)(void *self, hy_object **args, hy_object ***retvals);
 };

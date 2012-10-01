@@ -1,0 +1,94 @@
+
+
+(cdeclare-struct hy_memory_pool)
+(cdeclare-struct hy_common_methods)
+
+(cdefine-struct hy_object_base
+  (*void self)
+  (*hy-memory-pool pool)
+  (*hy-common-methods *methods))
+
+(cdefine-struct hy-object
+  (*hy-object-base base))
+
+(defun method-struct-name (interface-name)
+  (concatenate 'string interface-name "-methods"))
+
+(defun synthesize-method-pointers (methods)
+  (mapcar synthesize-method-pointer methods))
+
+(defun synthesize-method-pointer ((method-name param-in param-out))
+  (let ((parameters `(self ,@param-in ,@(to-param-out param-out))))
+  `(cfun-ptr ,method-name ,parameters ,hyresult)))
+
+(defun to-param-out (param-out)
+  (mapcar #'(lambda ((type varname))
+              `(*,type varname))))
+
+(defmacro define-interface (interface &rest methods)
+  (let ((method-table (method-struct-name interface))
+        (method-pointers (synthesize-method-pointers methods)))
+    `(progn
+      (cdeclare-struct ,method-table)
+      (cdefine-struct ,interface
+        (*hy-object-base base)
+        (*,method-table methods))
+      (cdefine-struct ,method-table
+        ,@method-pointers))))
+        
+(define-interface hy-meta-class ()
+  (name 
+    () 
+    (*(const char) retval))
+  (description 
+    () 
+    (*(const char) retval))
+  (supported-interfaces 
+    () 
+    (*hy-meta-interface-chain retval)))
+  
+(define-interface hy-data-buffer ()
+  (size 
+    () 
+    (uint64 retval))
+  (buffer 
+    () 
+    (*(const char) retval))
+  
+(define-interface hy-downstream-data-channel ()
+  (receive-data 
+    (*hy-downstream-data-channel-listener calback))
+  (close-channel 
+    (hyresult result)))
+  
+(define-interface hy-downstream-data-channel-listener ()
+  (on-data-receive 
+    (*hy-data-buffer buffer))
+  (on-data-close 
+    (hyresult result)))
+  
+(define-interface hy-upstream-data-channel ()
+  (prepare-send 
+    (*hy-upstream-data-channel-callback callback))
+  (send-data 
+    ((*hy-data-buffer buffer) 
+     (*hy-upstream-data-channel-callback callback)))
+  (close-channel 
+    (hyresult result)))
+    
+(define-interface hy-upstream-data-channel-listener ()
+  (on-next-data-ready-send)
+  (on-data-close 
+    (hyresult result)))
+  
+(define-interface hy-data-channel-factory ()
+  (create-dual-channel-pipe
+    ()
+    ((*hy-upstream-data-channel ret-upstream)
+     (*hy-downstream-data-channel ret-downstream))))
+
+   
+
+
+
+

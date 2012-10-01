@@ -12,7 +12,17 @@ HYDefineInterface(hy_data_buffer) {
 
 HYDefineChainInterface(hy_data_buffer_chain, hy_data_buffer*);
 
-typedef hy_data_buffer hy_string;
+HYDeclareMetaInterface(hy_data_buffer);
+
+HYDefineMetaMethod01(hy_data_buffer, size, hy_uint64_wrapper) {
+    uint64_t size;
+    hyresult result = HYTryCall(self, size, &size);
+    *retval1 = hy_uint64_wrapper_init(size);
+}
+
+HYDefineMetaInterface2(hy_data_buffer) {
+    
+}
 
 
 #define HYDataBufferDeclareMethodTable(class) \
